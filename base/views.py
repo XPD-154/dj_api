@@ -35,7 +35,16 @@ cur = connection.cursor(dictionary=True)
 # Create your views here.
 @api_view(['GET'])
 def checkall(request):
-    pass
+    query = """SELECT * FROM astpp_currency_table"""
+    cur.execute(query)
+    result = cur.fetchall()
+
+    if result == []:
+        return Response({"status": "error", "message": "data not found"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        #email = result[0]['CLemail']
+        #return Response({"email": email, "message": "data found"})
+        return HttpResponse(json.dumps(result, indent=4, sort_keys=True, default=str), content_type="application/json")
 
 
 @api_view(['GET'])
