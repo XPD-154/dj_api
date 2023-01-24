@@ -2,6 +2,7 @@ from django.shortcuts import render
 import requests
 import json
 import mysql.connector
+from mysql.connector import Error
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -20,6 +21,7 @@ user = settings.user
 password = settings.password
 database = settings.database
 
+'''
 #connect to existing database
 connection = mysql.connector.connect(
     host=host,
@@ -32,7 +34,40 @@ connection = mysql.connector.connect(
 #cursor for execution of sql query
 cur = connection.cursor(dictionary=True)
 
+'''
+
 # Create your views here.
+
+def mydbConnection(host_name, user_name, user_password, db_name):
+    connection = None
+    try:
+        connection = mysql.connector.connect(
+            host=host_name,
+            user=user_name,
+            password=user_password,
+            database=db_name,
+            autocommit=True
+        )
+
+        print("Connection to MySQL DB successful")
+
+    except Error as e:
+
+        print(f"The error '{e}' occurred")
+
+    return connection
+
+
+@api_view(['GET'])
+def getRoutes(request):
+    routes = [
+        'GET /api',
+        'GET /api/rooms',
+        'GET /api/rooms/ :id'
+    ]
+    return Response(routes)
+
+
 @api_view(['GET'])
 def checkall(request):
     query = """SELECT * FROM astpp_currency_table"""
