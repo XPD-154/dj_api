@@ -32,7 +32,7 @@ user=config('user')
 password=config('password')
 database=config('database')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'rest_framework_api_key',
 ]
 
 MIDDLEWARE = [
