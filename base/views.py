@@ -38,25 +38,17 @@ cur = connection.cursor(dictionary=True)
 
 # Create your views here.
 
-def mydbConnection(host_name, user_name, user_password, db_name):
-    connection = None
-    try:
-        connection = mysql.connector.connect(
-            host=host_name,
-            user=user_name,
-            password=user_password,
-            database=db_name,
-            autocommit=True
-        )
-
-        print("Connection to MySQL DB successful")
-
-    except Error as e:
-
-        print(f"The error '{e}' occurred")
-
-    return connection
-
+#function to connect to existing database
+def connect():
+    connection = mysql.connector.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=database,
+        autocommit=True
+    )
+    cur = connection.cursor(dictionary=True)
+    return cur
 
 @api_view(['GET'])
 def getRoutes(request):
@@ -70,26 +62,11 @@ def getRoutes(request):
 
 @api_view(['GET'])
 def checkall(request):
-    query = """SELECT * FROM astpp_currency_table"""
-    cur.execute(query)
-    result = cur.fetchall()
 
-    if result == []:
-        return Response({"status": "error", "message": "data not found"}, status=status.HTTP_404_NOT_FOUND)
-    else:
-        #email = result[0]['CLemail']
-        #return Response({"email": email, "message": "data found"})
-        return HttpResponse(json.dumps(result, indent=4, sort_keys=True, default=str), content_type="application/json")
-
-
-@api_view(['GET'])
-def check(request):
-    unique_id = request.GET.get('unique_id', False);
-
-    if unique_id:
-        query = """SELECT * FROM astpp_currency_table WHERE id = %s"""
-        params = (unique_id,)
-        cur.execute(query, params)
+    try:
+        connect()
+        query = """SELECT * FROM astpp_currency_table"""
+        cur.execute(query)
         result = cur.fetchall()
 
         if result == []:
@@ -99,5 +76,38 @@ def check(request):
             #return Response({"email": email, "message": "data found"})
             return HttpResponse(json.dumps(result, indent=4, sort_keys=True, default=str), content_type="application/json")
 
-    else:
-        return Response({"status": "error", "message": "data incomplete"}, status=status.HTTP_404_NOT_FOUND)
+    except Error as e:
+        error_result = str(e)
+        return Response({"status": "error", "message": error_result}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def check(request):
+
+    try:
+        connect()
+        unique_id = request.GET.get('unique_id', False)
+
+        if unique_id:
+            query = """SELECT * FROM astpp_currency_table WHERE id = %s"""
+            params = (unique_id,)
+            cur.execute(query, params)
+            result = cur.fetchall()
+
+            if result == []:
+                return Response({"status": "error", "message": "data not found"}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                #email = result[0]['CLemail']
+                #return Response({"email": email, "message": "data found"})
+                return HttpResponse(json.dumps(result, indent=4, sort_keys=True, default=str), content_type="application/json")
+
+        else:
+            return Response({"status": "error", "message": "data incomplete"}, status=status.HTTP_404_NOT_FOUND)
+
+    except Error as e:
+        error_result = str(e)
+        return Response({"status": "error", "message": error_result}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
